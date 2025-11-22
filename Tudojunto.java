@@ -13,7 +13,7 @@ public class Tudojunto {
 
         // Imprime letras das linhas
         for (int i = 0; i < vagas.length; i++) {
-            char linha = (char) ('A' + i); // A, B, C, D, E...
+            char linha = (char) ('A' + i); 
             System.out.print(linha + " ");
             for (int j = 0; j < vagas[0].length; j++) {
                 System.out.print(vagas[i][j].charAt(0) + "  ");
@@ -46,7 +46,9 @@ public class Tudojunto {
 
         switch (opcao){
            // case 1: carregarDados(); break;
-           // case 2: consultarVaga(); break;
+           case 2: 
+                 consultarVaga(vagas, scanner); 
+                 break;
             case 3: 
                 vagas = registrarEntrada(vagas, scanner);
                 break;
@@ -76,6 +78,7 @@ public class Tudojunto {
 
         System.out.println("Insira o caracter correspondente ao tipo do seu veículo (C = carro, M = moto, V = van)");
         veiculo = scanner.next().charAt(0);
+        veiculo = Character.toUpperCase(veiculo);
 
         System.out.println("Agora insira a hora de entrada do veículo");
         hora = scanner.nextInt();
@@ -83,7 +86,7 @@ public class Tudojunto {
         System.out.println("Por fim, insira o minuto de entrada");
         minuto = scanner.nextInt();
 
-        if(veiculo!='C'&&veiculo!='V'&&veiculo!='M'||hora>24||hora<0||minuto>60||minuto<0){
+        if(veiculo!='C' && veiculo!='V' && veiculo!='M' || hora>24 || hora<0 || minuto>60 || minuto<0){
             System.out.println("Dados inválidos! Enter para voltar ao menu principal: "+ veiculo +" "+hora+" "+minuto);
             scanner.nextLine();
             scanner.nextLine();
@@ -104,8 +107,8 @@ public class Tudojunto {
                 boolean mudou = false;
                 int i = 0;
                 while(mudou == false){
-                    if(vagas[(int) corredor - 'A'][i]=="."){
-                        vagas[(int) corredor - 'A'][i]=String.format("%c:%02d:%02d", veiculo, hora, minuto);
+                    if (vagas[(int) corredor - 'A'][i].equals(".")) {
+                        vagas[(int) corredor - 'A'][i] = String.format("%c:%02d:%02d", veiculo, hora, minuto);
                         mudou = true;
                     }
                     i++;
@@ -114,10 +117,9 @@ public class Tudojunto {
             case 2:
                 corredor = infos.charAt(0);
                 vaga = infos.charAt(1);
-                if(vagas[corredor-'A'][vaga-'1']=="."){
-                   vagas[corredor-'A'][vaga-'1']=String.format("%c:%02d:%02d", veiculo, hora, minuto);
-                }
-                else{
+                if (vagas[corredor - 'A'][vaga - '1'].equals(".")) {
+                    vagas[corredor - 'A'][vaga - '1'] = String.format("%c:%02d:%02d", veiculo, hora, minuto);
+                } else{
                     System.out.println("Essa vaga já está ocupada! Enter para voltar ao menu");
                     scanner.nextLine();
                     return vagas;
@@ -131,6 +133,65 @@ public class Tudojunto {
         scanner.nextLine();
         return vagas;
     }
+
+    public static void consultarVaga(String[][] vagas, Scanner scanner) {
+    String entrada = "";
+    System.out.print("\033\143");
+
+    System.out.println("CONSULTAR VAGA");
+    System.out.println("Digite a vaga no formato (Ex: A1, B3, D10): ");
+    scanner.nextLine();  
+    entrada = scanner.nextLine().toUpperCase();
+
+    if (entrada.length() < 2) {
+        System.out.println("Entrada inválida! Tecle Enter para voltar.");
+        scanner.nextLine();
+        return;
+    }
+
+    char corredorChar = entrada.charAt(0);
+
+    if (corredorChar < 'A' || corredorChar >= 'A' + vagas.length) {
+        System.out.println("Corredor inexistente! Tecle Enter para voltar.");
+        scanner.nextLine();
+        return;
+    }
+
+    String numeroStr = entrada.substring(1);
+
+    for (int i = 0; i < numeroStr.length(); i++) {
+        if (!Character.isDigit(numeroStr.charAt(i))) {
+            System.out.println("Número da vaga inválido! Tecle Enter para voltar.");
+            scanner.nextLine();
+            return;
+        }
+    }
+
+    int numeroVaga = 0;
+    for (int i = 0; i < numeroStr.length(); i++) {
+        numeroVaga = numeroVaga * 10 + (numeroStr.charAt(i) - '0');
+    }
+
+    if (numeroVaga < 1 || numeroVaga > vagas[0].length) {
+        System.out.println("Essa vaga não existe! Tecle Enter para voltar.");
+        scanner.nextLine();
+        return;
+    }
+
+    int linha = corredorChar - 'A';
+    int coluna = numeroVaga - 1;
+
+    System.out.println("\n--- RESULTADO ---");
+    if (vagas[linha][coluna].equals(".")) {
+        System.out.println("A vaga " + entrada + " está LIVRE.");
+    } else {
+        System.out.println("A vaga " + entrada + " está OCUPADA.");
+        System.out.println("Informações: " + vagas[linha][coluna]);
+    }
+
+    System.out.println("\nAperte Enter para voltar.");
+    scanner.nextLine();
+}
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
