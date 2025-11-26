@@ -255,11 +255,16 @@ public class Tudojunto {
         try {
             int linha = entrada.charAt(0) - 'A';
             int coluna = Integer.parseInt(entrada.substring(1)) - 1;
-
+            String status;
             if (linha < 0 || coluna < 0 || linha >= vagas.length || coluna >= vagas[0].length) {
                 System.out.println("Vaga não existe!");
             } else {
-                System.out.println("Status da vaga " + entrada + ": " + vagas[linha][coluna]);
+                if(vagas[linha][coluna].equals(".")){
+                    status = "LIVRE";
+                }else{
+                    status = "OCUPADA";
+                }
+                System.out.println("Status da vaga " + entrada + ": " + status);
             }
 
         } catch (Exception e) {
