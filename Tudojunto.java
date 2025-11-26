@@ -194,25 +194,35 @@ public class Tudojunto {
             System.out.println("Horário inválido!");
             return;
         }
-
+        int totalPermanencia = minSaida-minEntrada;
+        int horaPermanencia = (totalPermanencia-totalPermanencia%60)/60;
+        int minPermanencia = totalPermanencia-horaPermanencia*60;
 
         double valor = calcularValorASerPago(minSaida-minEntrada, valorRefPrimeiro, valorRefResto, tipo);
 
-        switch(tipo){
-            case 'C':
-                totalCarrosFinanceiro+=valor;
-                break;
-            case 'V':
-                totalVansFinanceiro+=valor;
-                break;
-            case 'M':
-                totalMotosFinanceiro+=valor;
-                break;
+        String libera = "";
+        System.out.printf("\nVALOR A SER PAGO: %.2f\nTempo de permanência: %02d:%02d\nDeseja liberar a vaga? (s/n)", valor, horaPermanencia, minPermanencia);
+        while(!libera.matches("S|N")){
+            libera = scanner.nextLine().toUpperCase();
+            if(!libera.matches("S|N")){
+                System.out.println("Entrada inválida! Tente novamente");
+            }
         }
-
-        vagas[linha][coluna] = ".";
-
-        System.out.printf("\nSaída registrada!\nValor: R$ %.2f", valor);
+        if(libera.equals("S")){
+            vagas[linha][coluna]=".";
+            switch(tipo){
+                case 'C':
+                    totalCarrosFinanceiro+=valor;
+                    break;
+                case 'V':
+                    totalVansFinanceiro+=valor;
+                    break;
+                case 'M':
+                    totalMotosFinanceiro+=valor;
+                    break;
+        }            
+        }
+ 
         esperarEnter(scanner);
     }
 
@@ -522,10 +532,22 @@ public class Tudojunto {
         double valorRefResto = scanner.nextDouble();
 
         System.out.print("Nº de corredores (5-15): ");
-        int linhas = scanner.nextInt();
+        int linhas = 0;
+        while(linhas<5 || linhas>15){
+            linhas = scanner.nextInt();
+            if(linhas<5 || linhas>15){
+            System.out.println("Número inválido! Tente novamente: ");
+            }
+        }
 
         System.out.print("Nº de vagas por corredor (5-20): ");
-        int colunas = scanner.nextInt();
+        int colunas = 0;
+        while(colunas<5 || colunas>15){
+            colunas = scanner.nextInt();
+            if(colunas<5 || colunas>15){
+            System.out.println("Número inválido! Tente novamente: ");
+            }
+        }
 
         String[][] vagas = new String[linhas][colunas];
 
