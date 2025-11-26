@@ -341,40 +341,66 @@ public class Tudojunto {
             return vagas;
         }
 
-        System.out.println("Escolher vaga (A1, B3...) ou ENTER p/ automática:");
-        String escolha = scanner.nextLine().trim().toUpperCase();
+        String infos;
+        System.out.println("Adicione alguma informação caso deseje (Vaga desejada, corredor desejado), caso não queira, apenas tecle Enter.");
+        infos = scanner.nextLine().toUpperCase();
+        char corredor;
+        int vaga;
+        int total = 0;
 
-        if (escolha.length() == 0) {
-            for (int i = 0; i < vagas.length; i++) {
-                for (int j = 0; j < vagas[0].length; j++) {
+        switch (infos.length()) {
+            case 0:
+                int i = 0;
+                boolean mudou = false;
+                int j = 0;
+                while(mudou == false){
                     if (vagas[i][j].equals(".")) {
                         vagas[i][j] = String.format("%c:%02d:%02d", veiculo, hora, minuto);
-                        System.out.println("Vaga atribuída automaticamente!");
-                        esperarEnter(scanner);
-                        return vagas;
+                        mudou = true;
+                    }else{
+                        total++;
+                    }
+                    if(total == vagas[i].length*vagas[j].length){
+                        System.out.println("O estacionamento está lotado!");
+                        break;
+                    }
+                    if(j==vagas[i].length-1 && i < vagas.length-1){
+                        j=0;
+                        i++;
+                    }else{
+                        j++;
                     }
                 }
-            }
-            System.out.println("Estacionamento cheio!");
-            esperarEnter(scanner);
-            return vagas;
+                break;
+            case 1:
+                corredor = infos.charAt(0);
+                mudou = false;
+                i = 0;
+                while(mudou == false){
+                    if(i==vagas[0].length){
+                        System.out.println("Corredor ocupado! Selecione outro corredor");
+                        break;
+                    }
+
+                    if (vagas[(int) corredor - 'A'][i].equals(".")) {
+                        vagas[(int) corredor - 'A'][i] = String.format("%c:%02d:%02d", veiculo, hora, minuto);
+                        mudou = true;
+                    }
+                    i++;
+                }
+                break;
+            default:
+                corredor = infos.charAt(0);
+                vaga = Integer.parseInt(infos.substring(1));
+                if (vagas[corredor - 'A'][vaga - 1].equals(".")) {
+                    vagas[corredor - 'A'][vaga - 1] = String.format("%c:%02d:%02d", veiculo, hora, minuto);
+                } else{
+                    System.out.println("Essa vaga já está ocupada! Enter para voltar ao menu");
+                    scanner.nextLine();
+                    return vagas;
+                }
+                break;
         }
-
-        try {
-            int linha = escolha.charAt(0) - 'A';
-            int coluna = Integer.parseInt(escolha.substring(1)) - 1;
-
-            if (vagas[linha][coluna].equals(".")) {
-                vagas[linha][coluna] = String.format("%c:%02d:%02d", veiculo, hora, minuto);
-                System.out.println("Entrada registrada!");
-            } else {
-                System.out.println("Vaga já ocupada!");
-            }
-
-        } catch (Exception e) {
-            System.out.println("Formato inválido!");
-        }
-
         esperarEnter(scanner);
         return vagas;
     }
