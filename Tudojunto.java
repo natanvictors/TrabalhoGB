@@ -1,3 +1,10 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Tudojunto {
@@ -10,62 +17,38 @@ public class Tudojunto {
     // -----------------------
     // CARREGAR DADOS
     // -----------------------
-    public static String[][] carregarDados(Scanner scanner, double[] valores) {
+    public static String[][] carregarDados(Scanner scanner, String[][] vagas) {
         System.out.print("\033[H\033[2J");
         System.out.println("=== CARREGAR DADOS ===\n");
+        String[][] novaMatriz = new String[vagas.length][vagas[0].length];
+        for(int i=0; i<vagas.length; i++){
+            Arrays.fill(novaMatriz[i], ".");
+        }
 
         System.out.print("Digite o nome do arquivo (ex.: dados.txt): ");
         String arquivo = scanner.nextLine();
-
         try {
-            java.io.File file = new java.io.File(arquivo);
-            Scanner leitor = new Scanner(file);
-
-            int linhas = leitor.nextInt();
-            int colunas = leitor.nextInt();
-            leitor.nextLine();
-
-            valores[0] = leitor.nextDouble(); 
-            valores[1] = leitor.nextDouble(); 
-            leitor.nextLine();
-
-            String[][] vagas = new String[linhas][colunas];
-
-            while (leitor.hasNextLine()) {
-                String linha = leitor.nextLine().trim();
-                if (linha.length() == 0) continue;
-
-                String[] partes = linha.split(":");
-
-                if (partes.length == 2 && partes[1].equals(".")) {
-                    char corredor = partes[0].charAt(0);
-                    int linhaIdx = corredor - 'A';
-                    int colunaIdx = Integer.parseInt(partes[0].substring(1)) - 1;
-                    vagas[linhaIdx][colunaIdx] = ".";
-                    continue;
+            FileReader reader = new FileReader(arquivo);
+            BufferedReader buffer = new BufferedReader(reader);
+            String line;
+            String[] separado;
+            while((line = buffer.readLine()) != null){
+                separado = line.split("=");
+                if(separado[0].charAt(0)-'A'>=vagas.length || separado[0].charAt(1)-'1'>=vagas[0].length){
+                    System.out.println(separado[0] + "||" + separado[1]);
+                    System.out.println("Não foi possível adicionar dados!");
+                    buffer.close();
+                    return null;
                 }
-
-                char corredor = partes[0].charAt(0);
-                int linhaIdx = corredor - 'A';
-                int colunaIdx = Integer.parseInt(partes[0].substring(1)) - 1;
-
-                char tipo = partes[1].charAt(0);
-                String hora = partes[2];
-                String min = partes[3];
-
-                vagas[linhaIdx][colunaIdx] = tipo + ":" + hora + ":" + min;
+                novaMatriz[separado[0].charAt(0)-'A'][separado[0].charAt(1)-'1'] = separado[1];
             }
-
-            leitor.close();
-            System.out.println("\nDados carregados!");
-            esperarEnter(scanner);
-            return vagas;
-
+            buffer.close();
         } catch (Exception e) {
             System.out.println("Erro ao carregar arquivo!");
             esperarEnter(scanner);
             return null;
         }
+        return novaMatriz;
     }
 
     // ------------------------------
@@ -101,6 +84,7 @@ public class Tudojunto {
         int qtdMotos = 0;
         int qtdVans = 0; 
         int total = 0;
+        int totalReal = 0;
 
         for (int i = 0; i < vagas.length; i++) {
             System.out.print((char) ('A' + i) + " ");
@@ -113,23 +97,54 @@ public class Tudojunto {
                 if (tipo == 'M') qtdMotos++;
                 if (tipo == 'V') qtdVans++;
                 if (tipo != '.') total++;
+                totalReal++;
             }
             System.out.println();
         }
+        if(total>0){
+            System.out.printf("\n%-8s: %2d - %5.1f%% ", "Moto", qtdMotos, (double) qtdMotos/total * 100);
+            mostrarGrafico((double) qtdMotos/total*100);
+            System.out.printf(" (%d vagas de %d)",qtdMotos, total);
+            System.out.printf("\n%-8s: %2d - %5.1f%% ", "Carro", qtdCarros, (double) qtdCarros/total * 100);
+            mostrarGrafico((double) qtdCarros/total*100);
+            System.out.printf(" (%d vagas de %d)",qtdCarros, total);
+            System.out.printf("\n%-8s: %2d - %5.1f%% ", "Van", qtdVans, (double) qtdVans/total * 100);
+            mostrarGrafico((double) qtdVans/total*100);
+            System.out.printf(" (%d vagas de %d)\n",qtdVans, total);
+            System.out.println("-------------------------------------------|");
+            System.out.printf("%-8s: %2d - %5.1f%% ", "Ocupadas", total, (double) total/totalReal*100);
+            mostrarGrafico((double) total/totalReal*100);
+            System.out.printf(" (%d vagas de %d)",total, totalReal);
+            System.out.printf("\n%-8s: %2d - %5.1f%% ", "Livres", totalReal-total, (double) (totalReal-total)/totalReal*100);
+            mostrarGrafico((double) (totalReal-total)/totalReal*100);
+            System.out.printf(" (%d vagas de %d)",totalReal-total, totalReal);
+        }else{
+            System.out.println("Ainda não há vagas ocupadas!");
+        }
+        
+        
 
-        int totalVagas = vagas.length * vagas[0].length;
 
-        System.out.println("\nTotal vagas : " + totalVagas);
-        System.out.println("Ocupadas    : " + total);
-        System.out.println("Livres      : " + (totalVagas - total));
 
         esperarEnter(scanner);
+    }
+
+    public static void mostrarGrafico(double porcentagem){
+        System.out.print("|");
+        for(int i = 0; i < 20; i++){
+            if(Math.floor(porcentagem)>5*i){
+                System.out.print("=");
+            }else{
+                System.out.print(".");
+            }
+        }
+        System.out.print("|");
     }
 
     // ------------------------------
     // REGISTRAR SAÍDA (FINANCEIRO)
     // ------------------------------
-    public static void registrarSaida(String[][] vagas, Scanner scanner) {
+    public static void registrarSaida(String[][] vagas, Scanner scanner, double valorRefPrimeiro, double valorRefResto) {
         System.out.print("\033[H\033[2J");
         System.out.println("=== REGISTRAR SAÍDA ===\n");
 
@@ -167,6 +182,10 @@ public class Tudojunto {
 
         System.out.print("Horário de saída (HH:MM): ");
         String horarioSaida = scanner.nextLine();
+        if(horarioSaida.length()!=5||horarioSaida.charAt(2)!=':'){
+            System.out.println("Formato inválido!");
+            return;
+        }
 
         int minEntrada = converterParaMinutos(horarioEntrada);
         int minSaida = converterParaMinutos(horarioSaida);
@@ -176,21 +195,46 @@ public class Tudojunto {
             return;
         }
 
-        double valor = switch (tipo) {
-            case 'M' -> 5.0;
-            case 'C' -> 10.0;
-            case 'V' -> 15.0;
-            default -> 0;
-        };
 
-        if (tipo == 'M') totalMotosFinanceiro += valor;
-        if (tipo == 'C') totalCarrosFinanceiro += valor;
-        if (tipo == 'V') totalVansFinanceiro += valor;
+        double valor = calcularValorASerPago(minSaida-minEntrada, valorRefPrimeiro, valorRefResto, tipo);
+
+        switch(tipo){
+            case 'C':
+                totalCarrosFinanceiro+=valor;
+                break;
+            case 'V':
+                totalVansFinanceiro+=valor;
+                break;
+            case 'M':
+                totalMotosFinanceiro+=valor;
+                break;
+        }
 
         vagas[linha][coluna] = ".";
 
-        System.out.println("\nSaída registrada!\nValor: R$ " + valor);
+        System.out.printf("\nSaída registrada!\nValor: R$ %.2f", valor);
         esperarEnter(scanner);
+    }
+
+    public static double calcularValorASerPago(int minutosNaVaga, double valorRefPrimeiro, double valorRefResto, char tipo){
+        switch(tipo){
+            case 'M':
+                valorRefPrimeiro*=0.7;
+                valorRefResto*=0.7;
+                break;
+            case 'V':
+                valorRefPrimeiro*=1.3;
+                valorRefResto*=1.3;
+                break;
+        }
+
+        if(minutosNaVaga<30){
+            return valorRefPrimeiro;
+        }
+
+        int minutosRestantes = minutosNaVaga - 30;
+
+        return valorRefPrimeiro + Math.ceil(minutosRestantes/30) * valorRefResto;
     }
 
     // ------------------------------
@@ -335,13 +379,46 @@ public class Tudojunto {
         return vagas;
     }
 
+    public static void salvarDados(String[][] vagas, Scanner scanner){
+        System.out.println("Insira o nome do arquivo em que deseja salvar (Ex: arquivo.txt)");
+        File arquivo = new File(scanner.nextLine());
+        String overwrite="";
+        boolean append = true;
+        if(arquivo.exists()){
+            while(!overwrite.equals("S") && !overwrite.equals("N")){
+                System.out.println("Deseja sobrescrever o arquivo existente? (s/n)");
+                overwrite = scanner.nextLine().toUpperCase();
+            }
+            if(overwrite.equals("S")){
+                append=false;
+            }
+        }
+
+        String linha;
+        try{
+            FileWriter writer = new FileWriter(arquivo, append);
+            BufferedWriter buffer = new BufferedWriter(writer);
+            for(int i=0; i<vagas.length; i++){
+                for(int j=0; j<vagas[0].length; j++){
+                    if(!vagas[i][j].equals(".")){
+                        linha = String.format("%s=%s\n", String.format("%c%d", i+'A', j+1), vagas[i][j]);
+                        buffer.write(linha);
+                    }
+                }
+            }
+            buffer.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
     // --------------------
     // MENU
     // --------------------
     public static void menu(String[][] vagas, double valorRefPrimeiro, double valorRefResto, Scanner scanner) {
-        int opcao = 10;
+        int opcao = 0;
 
-        while (opcao != 0) {
+        while (opcao != 9) {
             System.out.println("\n--- MENU ---");
             System.out.println("1. Carregar Dados");
             System.out.println("2. Consultar Vaga");
@@ -349,8 +426,9 @@ public class Tudojunto {
             System.out.println("4. Saída");
             System.out.println("5. Ocupação");
             System.out.println("6. Financeiro");
-            System.out.println("7. Integrantes");
-            System.out.println("0. Sair");
+            System.out.println("7. Salvar Dados");
+            System.out.println("8. Integrantes");
+            System.out.println("9. Sair");
             System.out.print("Escolha: ");
 
             opcao = scanner.nextInt();
@@ -358,9 +436,7 @@ public class Tudojunto {
 
             switch (opcao) {
                 case 1:
-                    double[] valores = new double[2];
-                    String[][] novo = carregarDados(scanner, valores);
-                    if (novo != null) vagas = novo;
+                    vagas = carregarDados(scanner, vagas);
                     break;
 
                 case 2:
@@ -372,7 +448,7 @@ public class Tudojunto {
                     break;
 
                 case 4:
-                    registrarSaida(vagas, scanner);
+                    registrarSaida(vagas, scanner, valorRefPrimeiro, valorRefResto);
                     break;
 
                 case 5:
@@ -383,8 +459,10 @@ public class Tudojunto {
                     financeiro();
                     esperarEnter(scanner);
                     break;
-
                 case 7:
+                    salvarDados(vagas, scanner);
+                    break;
+                case 8:
                     System.out.println("Integrantes:");
                     System.out.println("Aryel Andrada Bergmann");
                     System.out.println("Lucas Furquim Jardim");
@@ -393,7 +471,7 @@ public class Tudojunto {
                     esperarEnter(scanner);
                     break;
 
-                case 0:
+                case 9:
                     System.out.println("Saindo...");
                     break;
 
