@@ -542,9 +542,9 @@ public class Tudojunto {
 
         System.out.print("Nº de vagas por corredor (5-20): ");
         int colunas = 0;
-        while(colunas<5 || colunas>15){
+        while(colunas<5 || colunas>20){
             colunas = scanner.nextInt();
-            if(colunas<5 || colunas>15){
+            if(colunas<5 || colunas>20){
             System.out.println("Número inválido! Tente novamente: ");
             }
         }
